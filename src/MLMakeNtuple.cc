@@ -53,7 +53,12 @@ void MLMakeNtuple::init(Parameters* param) {
   _labelKeep = param->get("MLMakeNtuple.Label",int(0));
   _outEvent = param->get("MLMakeNtuple.EventClassification",int(0));
   _outEventNoJets = param->get("MLMakeNtuple.EventClassificationNoJets",int(0));
-  
+
+  // Validate that only one of EventClassification or EventClassificationNoJets is enabled
+  if (_outEvent && _outEventNoJets) {
+    throw Exception("Ambiguous configuration: EventClassification and EventClassificationNoJets cannot both be enabled. Please set only one of them to 1.");
+  }
+
   //cout << "MLMakeNtuple: Ntuple file set to " << outputFilename << endl;
   _file = new TFile(outputFilename.c_str(),"RECREATE");
   
@@ -129,12 +134,7 @@ void MLMakeNtuple::init(Parameters* param) {
 //template<typename ...Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 void MLMakeNtuple::process() {
-
-  // only one of EventClassification or EventClassificationNoJets is allowed to be 1
-  if (_outEvent && _outEventNoJets) {
-    cout << "Skipping due to ambiguous setting: MLMakeNtuple.EventClassification and MLMakeNtuple.EventClassificationNoJets are both turned on" << endl;
-    return;
-  }
+  // Configuration validation is now done in init()
 
   if(_outEvent)
     processEvent();
