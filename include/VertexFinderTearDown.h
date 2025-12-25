@@ -50,10 +50,9 @@ class VertexFinderTearDown {
       const Track* worstTrack = resultVertex->getWorstTrack();
       if (fixedTracks && find(fixedTracks->begin(), fixedTracks->end(), worstTrack) != fixedTracks->end()) {
         // sort Chi2Tracks
-        vector<pair<const Track*, double> > vpair;
         const map<const Track*, double>& mpair = resultVertex->getTracksChi2Map();
-        vpair.resize(mpair.size());
-        partial_sort_copy(mpair.begin(), mpair.end(), vpair.begin(), vpair.end(), SortTracksByChi2());
+        vector<pair<const Track*, double> > vpair(mpair.begin(), mpair.end());
+        std::sort(vpair.begin(), vpair.end(), SortTracksByChi2());
 
         unsigned int nworst = 1;
         do {

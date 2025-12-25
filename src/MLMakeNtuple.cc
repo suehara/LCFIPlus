@@ -162,13 +162,13 @@ void MLMakeNtuple::processEventNoJets(){
   TrackVec &tracks_orig = event->getTracks();
   NeutralVec &neutrals_orig = event->getNeutrals();
 
-  vector<const Track *> tracks(tracks_orig.size());
-  vector<const Neutral *> neutrals(neutrals_orig.size());
+  vector<const Track *> tracks(tracks_orig.begin(), tracks_orig.end());
+  vector<const Neutral *> neutrals(neutrals_orig.begin(), neutrals_orig.end());
 
-  std::partial_sort_copy(tracks_orig.begin(),tracks_orig.end(),tracks.begin(), tracks.end(), [](const Track *a, const Track *b){
+  std::sort(tracks.begin(), tracks.end(), [](const Track *a, const Track *b){
     return a->E() > b->E();
   });
-  std::partial_sort_copy(neutrals_orig.begin(),neutrals_orig.end(),neutrals.begin(), neutrals.end(),[](const Neutral *a, const Neutral *b){
+  std::sort(neutrals.begin(), neutrals.end(), [](const Neutral *a, const Neutral *b){
     return a->E() > b->E();
   });
 
