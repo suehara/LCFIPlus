@@ -42,9 +42,9 @@ LcfiplusProcessor::LcfiplusProcessor() : Processor("LcfiplusProcessor") {
                           _pfoCollectionName, std::string(""));
   registerInputCollection(LCIO::MCPARTICLE, "MCPCollection" , "MC particle collection",
                           _mcpCollectionName, std::string(""));
-  registerInputCollection(LCIO::LCRELATION, "MCPFORelation", "Relation between MC and PFO particles",
+  registerInputCollection(LCIO::LCRELATION, "MCPFORelation", "Relation between MC and PFO particles (MCParticle to ReconstructedParticle)",
                           _mcpfoRelationName, std::string(""));
-  registerInputCollection(LCIO::LCRELATION, "MCTrackRelation", "Relation between MC and tracks, usually better in terms of assignment of tracks",
+  registerInputCollection(LCIO::LCRELATION, "MCTrackRelation", "Relation between MC and tracks (MCParticle to Track), usually better in terms of assignment of tracks",
                           _mctrkRelationName, std::string(""));
 
   registerProcessorParameter("Algorithms", "LCFIPlus algorithms to run", _algonames, vector<string>());
