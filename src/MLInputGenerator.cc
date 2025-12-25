@@ -374,7 +374,7 @@ namespace MLInputGenerator {
 
   // copied from FCCANalyses/analyzers/dataframe/src/ReconstructedParticle2Track.cc
   float calc_dxy(float D0_wrt0, float Z0_wrt0, float phi0_wrt0, TVector3 p, TVector3 privtx, int charge){
-    double Bz = 3.5;
+    double Bz = Globals::Instance()->getBField();
     double cSpeed = 2.99792458e8 * 1e-9;
 
     TVector3 X( - D0_wrt0 * TMath::Sin(phi0_wrt0) , D0_wrt0 * TMath::Cos(phi0_wrt0) , Z0_wrt0);
@@ -395,7 +395,7 @@ namespace MLInputGenerator {
   }
 
   float calc_dz(float D0_wrt0, float Z0_wrt0, float phi0_wrt0, TVector3 p, TVector3 privtx, int charge){
-    double Bz = 3.5;
+    double Bz = Globals::Instance()->getBField();
     double cSpeed = 2.99792458e8 * 1e-9;
 
     TVector3 X( - D0_wrt0 * TMath::Sin(phi0_wrt0) , D0_wrt0 * TMath::Cos(phi0_wrt0) , Z0_wrt0);
