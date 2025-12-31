@@ -1020,10 +1020,6 @@ void LCIOStorer::WriteJets(const char* jetName, const char* newName, bool writeV
 //		_jetLCIORel.clear();
 //		_jetLCIORel.resize(pvjet->size()); // map has no resize()
 
-  // make collection
-  lcio::LCCollectionVec* col = new lcio::LCCollectionVec(lcio::LCIO::RECONSTRUCTEDPARTICLE);
-  lcio::LCRelationNavigator rel(lcio::LCIO::RECONSTRUCTEDPARTICLE, lcio::LCIO::VERTEX);
-
   // naming
   if (!newName)newName = jetName;
   string vn = string(newName) + "_vtx";
@@ -1031,7 +1027,40 @@ void LCIOStorer::WriteJets(const char* jetName, const char* newName, bool writeV
   string rn = string(newName) + "_rel";
   if (!relName)relName = rn.c_str();
 
-  //TODO: check existence of collections
+  // check if collection already exists in LCIO
+  lcio::LCCollection* existingCol = nullptr;
+  bool isExistingCollection = false;
+  try {
+    existingCol = _event->getCollection(newName);
+    isExistingCollection = true;
+  } catch (lcio::DataNotAvailableException& e) {
+    // collection doesn't exist, will create new one
+    isExistingCollection = false;
+  }
+
+  // if collection exists, just add ParticleIDs to existing objects
+  if (isExistingCollection && existingCol) {
+    cout << "LCIOStorer::WriteJets: Collection '" << newName << "' already exists in LCIO. Adding ParticleIDs to existing jets." << endl;
+
+    for (unsigned int n=0; n<pvjet->size(); n++) {
+      const lcfiplus::Jet* flajet = (*pvjet)[n];
+      lcio::ReconstructedParticle* lciojet = _jetLCIORel[flajet];
+
+      if (lciojet) {
+        // add PID stuffs to existing jet
+        WriteAllPIDs(existingCol, lciojet, flajet);
+      } else {
+        cerr << "LCIOStorer::WriteJets: Warning - no LCIO jet found for lcfiplus jet " << n << endl;
+      }
+    }
+
+    // collection already exists, no need to add it again
+    return;
+  }
+
+  // create new collection for new jets
+  lcio::LCCollectionVec* col = new lcio::LCCollectionVec(lcio::LCIO::RECONSTRUCTEDPARTICLE);
+  lcio::LCRelationNavigator rel(lcio::LCIO::RECONSTRUCTEDPARTICLE, lcio::LCIO::VERTEX);
 
   // first reserve vertex collection
   if (writeVertex) {

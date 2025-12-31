@@ -44,6 +44,54 @@ bool EventStore::IsExist(const char* name, const char* classname)const {
   return false;
 }
 
+// add flags to collection
+bool EventStore::AddFlags(const char* name, int flags) {
+  // check if collection exists
+  if (!IsExist(name)) {
+    cerr << "EventStore::AddFlags: Collection '" << name << "' does not exist" << endl;
+    return false;
+  }
+
+  // find all entries with the specified name and add flags
+  pair<multimap<string, StoredEntry>::iterator, multimap<string, StoredEntry>::iterator> range;
+  range = _objectMap.equal_range(name);
+
+  if (range.first == _objectMap.end()) {
+    return false;
+  }
+
+  // add flags using OR operation
+  for (multimap<string, StoredEntry>::iterator it = range.first; it != range.second; ++it) {
+    it->second.flag |= flags;
+  }
+
+  return true;
+}
+
+// remove flags from collection
+bool EventStore::RemoveFlags(const char* name, int flags) {
+  // check if collection exists
+  if (!IsExist(name)) {
+    cerr << "EventStore::RemoveFlags: Collection '" << name << "' does not exist" << endl;
+    return false;
+  }
+
+  // find all entries with the specified name and remove flags
+  pair<multimap<string, StoredEntry>::iterator, multimap<string, StoredEntry>::iterator> range;
+  range = _objectMap.equal_range(name);
+
+  if (range.first == _objectMap.end()) {
+    return false;
+  }
+
+  // remove flags using AND NOT operation
+  for (multimap<string, StoredEntry>::iterator it = range.first; it != range.second; ++it) {
+    it->second.flag &= ~flags;
+  }
+
+  return true;
+}
+
 // obtain class name of the named buffer
 const char* EventStore::GetClassName(const char* name, int idx)const {
   int count = _objectMap.count(name);

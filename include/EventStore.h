@@ -67,6 +67,10 @@ class EventStore {
   }
   bool IsExist(const char* name, const char* classname)const;
 
+  // Flag management
+  bool AddFlags(const char* name, int flags);
+  bool RemoveFlags(const char* name, int flags);
+
   // Object retrieval
   const char* GetClassName(const char* name, int idx = 0)const;
   void* GetObject(const char* name, const char* classname = "")const;  // CAUTION: no type check

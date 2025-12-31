@@ -1919,6 +1919,10 @@ void FlavorTag::init(Parameters* param) {
   FTManager& mgr = FTManager::getInstance();
   mgr.initVars();
 
+  // Mark the jet collection as PERSIST so it will be written to LCIO
+  // This is necessary for jets read from LCIO that will have ParticleID added
+  Event::Instance()->AddFlags(_jetcolname.c_str(), EventStore::PERSIST);
+
 }
 
 void FlavorTag::process() {

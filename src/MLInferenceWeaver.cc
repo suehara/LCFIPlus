@@ -67,6 +67,10 @@ void MLInferenceWeaver::init(Parameters* param) {
   parseJSON(_jsonFileName);
   _weaver = new WeaverInterface(_onnxFileName, _jsonFileName, _variables);
   MLInputGenerator::init();
+
+  // Mark the jet collection as PERSIST so it will be written to LCIO
+  // This is necessary for jets read from LCIO that will have ParticleID added
+  Event::Instance()->AddFlags(_jetCollectionName.c_str(), EventStore::PERSIST);
 }
 
 void MLInferenceWeaver::process() {
