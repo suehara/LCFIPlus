@@ -24,6 +24,7 @@ class MLInferenceWeaver : public Algorithm {
     void processJet(); // for jet classification mode
     void processEvent(); // for event classification mode
     std::string _jetCollectionName;
+    std::string _updateJetCollectionName;
     std::string _jsonFileName;
     std::string _onnxFileName;
     std::string _outputParameterName;
@@ -31,6 +32,7 @@ class MLInferenceWeaver : public Algorithm {
     std::vector<std::string> _outputVariables;
     rv::RVec<std::string> _variables; //!
     WeaverInterface* _weaver; //!
+    std::vector<Jet*>* _outputJets; //!
 
     struct PreprocessParams {
       struct VarInfo {

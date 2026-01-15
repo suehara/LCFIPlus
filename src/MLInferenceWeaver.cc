@@ -55,6 +55,7 @@ void MLInferenceWeaver::parseJSON(const string& json_filename) {
 void MLInferenceWeaver::init(Parameters* param) {
   Algorithm::init(param);
   _jetCollectionName = param->get("MLInferenceWeaver.JetCollectionName",string("RefinedJets"));
+  _updateJetCollectionName = param->get("MLInferenceWeaver.UpdateJetCollectionName",string(""));
   string privtx = param->get("PrimaryVertexCollectionName",string("PrimaryVertex"));
   Event::Instance()->setDefaultPrimaryVertex(privtx.c_str());
   _jsonFileName = param->get("MLInferenceWeaver.JsonFileName",string("preprocess.json"));
@@ -63,14 +64,21 @@ void MLInferenceWeaver::init(Parameters* param) {
 
   // event classification (true) vs. jet classification (false; default)
   _eventClassification = param->get("MLInferenceWeaver.EventClassification",false);
-  
+
   parseJSON(_jsonFileName);
   _weaver = new WeaverInterface(_onnxFileName, _jsonFileName, _variables);
   MLInputGenerator::init();
 
-  // Mark the jet collection as PERSIST so it will be written to LCIO
-  // This is necessary for jets read from LCIO that will have ParticleID added
-  Event::Instance()->AddFlags(_jetCollectionName.c_str(), EventStore::PERSIST);
+  // If UpdateJetCollectionName is specified, create a new collection
+  if (!_updateJetCollectionName.empty()) {
+    Event::Instance()->Register(_updateJetCollectionName.c_str(), _outputJets, EventStore::PERSIST);
+    cout << "MLInferenceWeaver: Creating new jet collection '" << _updateJetCollectionName << "'" << endl;
+  } else {
+    // Mark the jet collection as PERSIST so it will be written to LCIO
+    // This is necessary for jets read from LCIO that will have ParticleID added
+    Event::Instance()->AddFlags(_jetCollectionName.c_str(), EventStore::PERSIST);
+    _outputJets = 0;
+  }
 }
 
 void MLInferenceWeaver::process() {
@@ -105,7 +113,7 @@ void MLInferenceWeaver::processJet() {
     // prepare input
     rv::RVec< rv::RVec<float> > vars;
     for (size_t i=0; i<_variables.size(); ++i) {
-      
+
       // hold computed variable for all the candidates in a jet
       rv::RVec<float> cand_vars;
 
@@ -172,7 +180,19 @@ void MLInferenceWeaver::processJet() {
       param.add( _outputVariables[i].data(), (double)res[i] );
     }
     //param.add( "Category", (double)category );
-    jet->addParam( _outputParameterName.data(), param );
+
+    // If UpdateJetCollectionName is specified, create a new jet with ParticleID
+    if (!_updateJetCollectionName.empty()) {
+      // Copy jet (without extracting vertices)
+      Jet* newJet = new Jet(*jet, false);
+      // Add ParticleID to the new jet
+      newJet->addParam( _outputParameterName.data(), param );
+      // Add to output collection
+      _outputJets->push_back(newJet);
+    } else {
+      // Add ParticleID to existing jet
+      jet->addParam( _outputParameterName.data(), param );
+    }
   }
 
 }
