@@ -13,7 +13,6 @@
 #include <typeinfo>
 
 using namespace lcfiplus;
-using namespace MLInputGenerator;
 
 namespace lcfiplus {
 
@@ -89,7 +88,7 @@ void MLMakeNtuple::init(Parameters* param) {
     _tree->Branch( key.c_str(), &_data.newDataVec(key) );
   }
 
-  for (const auto& v: calcInput) {
+  for (const auto& v: MLInputGenerator::getCalcInput()) {
     const auto& key = v.first;
 
     if(_outEventNoJets){
@@ -149,7 +148,7 @@ void MLMakeNtuple::processEventNoJets(){
   const Vertex* privtx = Event::Instance()->getPrimaryVertex();
   _label = _labelKeep;
 
-  for (const auto& v: calcInput) {
+  for (const auto& v: MLInputGenerator::getCalcInput()) {
     const auto& key = v.first;
     if (std::holds_alternative<function<double(const Event*)> >(v.second)) {
       auto f = std::get<function<double(const Event*)> >(v.second);
@@ -173,7 +172,7 @@ void MLMakeNtuple::processEventNoJets(){
   });
 
   _data.resetData();
-  for (const auto& v: calcInput) {
+  for (const auto& v: MLInputGenerator::getCalcInput()) {
     const auto& key = v.first;
 
     if (std::holds_alternative<function<double(const Track*)> >(v.second)) {
@@ -228,7 +227,7 @@ void MLMakeNtuple::processEvent(){
   _data.resetData();
   _label = _labelKeep;
 
-  for (const auto& v: calcInput) {
+  for (const auto& v: MLInputGenerator::getCalcInput()) {
     const auto& key = v.first;
     if (std::holds_alternative<function<double(const Event*)> >(v.second)) {
       auto f = std::get<function<double(const Event*)> >(v.second);
@@ -252,7 +251,7 @@ void MLMakeNtuple::processEvent(){
       _data.addDataVec("neu_jetIndex",(float)njet);
     }
 
-    for (const auto& v: calcInput) {
+    for (const auto& v: MLInputGenerator::getCalcInput()) {
       const auto& key = v.first;
 
       /*
@@ -328,7 +327,7 @@ void MLMakeNtuple::processJets(){
   }
   JetVec& jets = *jetsPtr;
 
-  for (const auto& v: calcInput) {
+  for (const auto& v: MLInputGenerator::getCalcInput()) {
     const auto& key = v.first;
     if (std::holds_alternative<function<double(const Event*)> >(v.second)) {
       auto f = std::get<function<double(const Event*)> >(v.second);
@@ -352,7 +351,7 @@ void MLMakeNtuple::processJets(){
     TrackVec tracks = jet->getAllTracksSorted(true);
     NeutralVec neutrals = jet->getNeutralsSorted();
 
-    for (const auto& v: calcInput) {
+    for (const auto& v: MLInputGenerator::getCalcInput()) {
       const auto& key = v.first;
 
       if (std::holds_alternative<function<double(const Jet*)> >(v.second)) {

@@ -13,7 +13,6 @@
 #include "nlohmann/json.hpp"
 
 using namespace lcfiplus;
-using namespace MLInputGenerator;
 
 void MLInferenceWeaver::parseJSON(const string& json_filename) {
   std::ifstream json_file(json_filename);
@@ -119,11 +118,12 @@ void MLInferenceWeaver::processJet() {
 
       // find function provided by MLInputGenerator; first check if it exists
       const auto& name = _variables[i];
-      if (calcInput.find(name) == calcInput.end()) {
+      const auto& calcInputMap = MLInputGenerator::getCalcInput();
+      if (calcInputMap.find(name) == calcInputMap.end()) {
         cerr << "MLInferenceWeaver: no function to compute input variable " << name << endl;
         exit(1);
       }
-      const auto& func = calcInput[name];
+      const auto& func = calcInputMap.at(name);
 
       if (std::holds_alternative<function<double(const Jet*)> >(func)) {
         auto f = std::get<function<double(const Jet*)> >(func);
@@ -218,11 +218,12 @@ void MLInferenceWeaver::processEvent() {
 
     // find function provided by MLInputGenerator; first check if it exists
     const auto& name = _variables[i];
-    if (calcInput.find(name) == calcInput.end()) {
+    const auto& calcInputMap = MLInputGenerator::getCalcInput();
+    if (calcInputMap.find(name) == calcInputMap.end()) {
       cerr << "MLInferenceWeaver: no function to compute input variable " << name << endl;
       exit(1);
     }
-    const auto& func = calcInput[name];
+    const auto& func = calcInputMap.at(name);
 
     if (std::holds_alternative<function<double(const Track*)> >(func)) {
       auto f = std::get<function<double(const Track*)> >(func);
