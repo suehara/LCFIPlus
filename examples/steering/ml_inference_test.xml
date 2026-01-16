@@ -1,0 +1,81 @@
+<marlin>
+
+  <constants>
+    <!-- ***** Global constant for reconstruction ***** -->
+    <!-- The k4geo directory where to look for the ILD model -->
+    <constant name="k4geo_DIR" value="/cvmfs/sw.hsf.org/key4hep/releases/2025-05-29/x86_64-almalinux9-gcc14.2.0-opt/k4geo/00-22-ubhvqv/share/k4geo" />
+    <!-- ILD detector model -->
+    <constant name="DetectorModel" value="ILD_o1_v05" />
+    <!-- The full compact file name -->
+    <constant name="CompactFile" value="${k4geo_DIR}/ILD/compact/${DetectorModel}/${DetectorModel}.xml" />
+  </constants>
+
+<execute>
+  <processor name="InitDD4hep"/>
+	<processor name="MLInferenceWeaver"/>
+	<processor name="LCIOOutput"/>
+</execute>
+
+
+
+<global>
+	<parameter name="LCIOInputFiles">
+	  /group/ilc/users/rtagami/correction_dEdx/bb/output/n000.d_dstm_14986_0.slcio
+	</parameter>
+	<parameter name="MaxRecordNumber" value="10"/>
+	<parameter name="SkipNEvents" value="0" />
+	<parameter name="SupressCheck" value="false" />
+	<parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT">MESSAGE0</parameter>
+</global>
+
+  <processor name="InitDD4hep" type="InitializeDD4hep">
+    <!--InitializeDD4hep reads a compact xml file and initializes the DD4hep::LCDD object-->
+    <!--Name of the DD4hep compact xml file to load-->
+    <parameter name="DD4hepXMLFile" type="string"> ${CompactFile} </parameter>
+    </processor>
+
+<processor name="MLInferenceWeaver" type="LcfiplusProcessor">
+
+	<!-- run ML inference -->
+	<parameter name="Algorithms" type="stringVec"> MLInferenceWeaver </parameter>
+	<parameter name="ReadSubdetectorEnergies" type="int" value="1"/> <!-- true for ILD -->
+	<parameter name="UpdateVertexRPDaughters" type="int" value="0"/> <!-- false for non-updative PandoraPFOs -->
+	<parameter name="TrackHitOrdering" type="int" value="1"/> <!-- Track hit ordering: 0=ILD-LOI,SID-DBD, 1=ILD-DBD -->
+	<parameter name="PrintEventNumber" type="int" value="1"/> <!-- 0 for not printing event number, n for printing every n events -->
+
+	<parameter name="MagneticField" type="double" value="3.5"/>
+
+	<!-- specify input collection names -->
+	<parameter name="PFOCollection" type="string" value="PandoraPFOs" />
+	<parameter name="PrimaryVertexCollectionName" type="string" value="PrimaryVertex" />
+
+	<!-- ML Inference Weaver parameters -->
+	<parameter name="MLInferenceWeaver.JetCollectionName" type="string" value="RefinedJets" />
+	<parameter name="MLInferenceWeaver.UpdateJetCollectionName" type="string" value="RefinedJets2" />
+	<parameter name="MLInferenceWeaver.JsonFileName" type="string" value="../../onnx/ilc_nnqq_strange_cpidprob_mcpdg/preprocess.json" />
+	<parameter name="MLInferenceWeaver.OnnxFileName" type="string" value="../../onnx/ilc_nnqq_strange_cpidprob_mcpdg/ilc_nnqq_strange_cpidprob_mcpdg.onnx" />
+	<parameter name="MLInferenceWeaver.OutputParameterName" type="string" value="weaver" />
+
+</processor>
+
+<processor name="LCIOOutput" type="LCIOOutputProcessor">
+	<!--Writes the current event to the specified LCIO outputfile-->
+	<!--drops the named collections from the event-->
+	<parameter name="DropCollectionNames" type="StringVec"> </parameter>
+	<!--drops all collections of the given type from the event-->
+	<parameter name="DropCollectionTypes" type="StringVec"> </parameter>
+	<!-- write complete objects in subset collections to the file (i.e. ignore subset flag)-->
+	<parameter name="FullSubsetCollections" type="StringVec"> </parameter>
+	<!--force keep of the named collections - overrules DropCollectionTypes (and DropCollectionNames)-->
+	<parameter name="KeepCollectionNames" type="StringVec"> </parameter>
+	<!-- name of output file -->
+	<parameter name="LCIOOutputFile" type="string"> ml_inference_test_output.slcio </parameter>
+	<!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
+	<parameter name="LCIOWriteMode" type="string"> WRITE_NEW </parameter>
+	<!--Set it to true to remove intermediate collections and keep only final products-->
+	<parameter name="SplitFilenameByEvent" type="bool"> false </parameter>
+	<!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
+	<parameter name="SplitFilenameSizekB" type="int"> 1996488704 </parameter>
+</processor>
+
+</marlin>
